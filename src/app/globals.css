@@ -1,0 +1,101 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-surface text-gray-900 antialiased;
+  }
+
+  /* Consistent focus ring across all interactive elements */
+  *:focus-visible {
+    @apply outline-none ring-2 ring-primary-400/50 ring-offset-2;
+  }
+
+  /* Smoother font rendering */
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+}
+
+@layer components {
+  /* ── Card ─────────────────────────────────────────────────────────────── */
+  .card {
+    @apply rounded-card border border-gray-200/80 bg-white shadow-soft;
+  }
+  .card-hover {
+    @apply transition-shadow duration-200 hover:shadow-card;
+  }
+
+  /* ── Section header inside card ────────────────────────────────────── */
+  .card-header {
+    @apply flex items-center justify-between pb-4;
+  }
+  .card-title {
+    @apply text-sm font-semibold tracking-tight text-gray-900;
+  }
+
+  /* ── Button base ──────────────────────────────────────────────────── */
+  .btn {
+    @apply inline-flex items-center justify-center gap-1.5 rounded-card text-sm font-semibold
+           transition-colors duration-150 focus-visible:outline-none
+           focus-visible:ring-2 focus-visible:ring-primary-400/50 focus-visible:ring-offset-2
+           disabled:pointer-events-none disabled:opacity-50;
+  }
+  .btn-primary {
+    @apply btn bg-primary-600 px-4 py-2 text-white hover:bg-primary-700 active:bg-primary-800;
+  }
+  .btn-secondary {
+    @apply btn border border-gray-200 bg-white px-4 py-2 text-gray-700 hover:bg-surface-hover active:bg-surface-muted;
+  }
+  .btn-ghost {
+    @apply btn px-3 py-1.5 text-gray-600 hover:bg-surface-hover hover:text-gray-900;
+  }
+  .btn-destructive {
+    @apply btn border border-red-200 bg-white px-4 py-2 text-red-600 hover:bg-red-50 active:bg-red-100;
+  }
+  .btn-sm {
+    @apply px-3 py-1.5 text-xs;
+  }
+  .btn-xs {
+    @apply px-2.5 py-1 text-xs;
+  }
+
+  /* ── List row (clickable) ─────────────────────────────────────────── */
+  .list-row {
+    @apply flex items-center justify-between rounded-card border border-gray-100 px-4 py-3
+           transition-all duration-150 hover:border-gray-200 hover:bg-surface-hover hover:shadow-soft;
+  }
+
+  /* ── Page layout ──────────────────────────────────────────────────── */
+  .page-header {
+    @apply flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between;
+  }
+  .page-title {
+    @apply text-2xl font-bold tracking-tight text-gray-900;
+  }
+  .page-subtitle {
+    @apply text-sm text-gray-500;
+  }
+
+  /* ── Table ────────────────────────────────────────────────────────── */
+  .table-header {
+    @apply border-b border-gray-100 bg-surface-muted/50 px-4 py-2.5 text-left text-xs
+           font-semibold uppercase tracking-wider text-gray-500;
+  }
+  .table-cell {
+    @apply px-4 py-3 text-sm text-gray-700;
+  }
+  .table-row-hover {
+    @apply transition-colors duration-100 hover:bg-surface-hover;
+  }
+
+  /* ── Badge ────────────────────────────────────────────────────────── */
+  .badge {
+    @apply inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium;
+  }
+  .badge-neutral {
+    @apply badge bg-gray-100 text-gray-600;
+  }
+}

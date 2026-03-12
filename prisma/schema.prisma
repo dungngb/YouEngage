@@ -1,0 +1,289 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+// ============================================================================
+// Auth & Access Control
+// ============================================================================
+
+model Role {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  description String?
+  users       User[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String    @unique
+  emailVerified DateTime?
+  image         String?
+  roleId        String?
+  role          Role?     @relation(fields: [roleId], references: [id])
+  accounts      Account[]
+  sessions      Session[]
+
+  // Engagement relations
+  engagementsCreated EngagementMember[]
+  tasksAssigned      Task[]             @relation("TaskAssignee")
+  uploads            Attachment[]       @relation("FileUploader")
+  signoffs           Signoff[]          @relation("SignoffUser")
+  auditLogs          AuditLog[]         @relation("AuditLogUser")
+  reportsCreated     Report[]           @relation("ReportCreator")
+  findingsCreated    Finding[]          @relation("FindingCreator")
+  findingsClosed     Finding[]          @relation("FindingCloser")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+// ============================================================================
+// Engagement Management
+// ============================================================================
+
+enum EngagementStatus {
+  DRAFT
+  ACTIVE
+  FIELDWORK
+  REPORTING
+  CLOSED
+}
+
+model Engagement {
+  id            String           @id @default(cuid())
+  name          String
+  description   String?          @db.Text
+  auditedEntity String
+  scope         String?          @db.Text
+  fiscalYear    Int?
+  status        EngagementStatus @default(DRAFT)
+  plannedStart  DateTime?
+  plannedEnd    DateTime?
+  members       EngagementMember[]
+  tasks         Task[]
+  attachments   Attachment[]
+  reports       Report[]
+  findings      Finding[]
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
+}
+
+model EngagementMember {
+  id           String     @id @default(cuid())
+  engagementId String
+  engagement   Engagement @relation(fields: [engagementId], references: [id], onDelete: Cascade)
+  userId       String
+  user         User       @relation(fields: [userId], references: [id])
+  role         String     @default("member") // "lead" or "member"
+  assignedAt   DateTime   @default(now())
+
+  @@unique([engagementId, userId])
+}
+
+// ============================================================================
+// Tasks & Workpapers
+// ============================================================================
+
+enum TaskType {
+  TASK
+  WORKPAPER
+}
+
+enum TaskStatus {
+  TODO
+  IN_PROGRESS
+  COMPLETED
+  PENDING_REVIEW
+  APPROVED
+  REJECTED
+}
+
+model Task {
+  id           String     @id @default(cuid())
+  engagementId String
+  engagement   Engagement @relation(fields: [engagementId], references: [id], onDelete: Cascade)
+  title        String
+  description  String?    @db.Text
+  type         TaskType   @default(TASK)
+  status       TaskStatus @default(TODO)
+  assigneeId   String?
+  assignee     User?      @relation("TaskAssignee", fields: [assigneeId], references: [id])
+  sortOrder    Int        @default(0)
+  dueDate      DateTime?
+  attachments  Attachment[]
+  signoffs     Signoff[]
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+}
+
+// ============================================================================
+// Signoff Workflow
+// ============================================================================
+
+enum SignoffType {
+  PREPARER
+  REVIEWER
+}
+
+enum SignoffStatus {
+  SIGNED
+  REJECTED
+}
+
+model Signoff {
+  id         String       @id @default(cuid())
+  taskId     String
+  task       Task         @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  type       SignoffType
+  status     SignoffStatus
+  signedById String
+  signedBy   User         @relation("SignoffUser", fields: [signedById], references: [id])
+  comment    String?      @db.Text
+  signedAt   DateTime     @default(now())
+}
+
+// ============================================================================
+// Attachments / Document Storage
+// ============================================================================
+
+model Attachment {
+  id           String      @id @default(cuid())
+  filename     String
+  originalName String
+  mimeType     String
+  size         Int
+  storagePath  String
+  category     String      @default("general")
+  engagementId String?
+  engagement   Engagement? @relation(fields: [engagementId], references: [id], onDelete: Cascade)
+  taskId       String?
+  task         Task?       @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  reportId     String?
+  report       Report?     @relation(fields: [reportId], references: [id], onDelete: Cascade)
+  findingId    String?
+  finding      Finding?    @relation(fields: [findingId], references: [id], onDelete: Cascade)
+  uploadedById String
+  uploadedBy   User        @relation("FileUploader", fields: [uploadedById], references: [id])
+  createdAt    DateTime    @default(now())
+}
+
+// ============================================================================
+// Reporting
+// ============================================================================
+
+enum ReportStatus {
+  DRAFT
+  REVIEW
+  FINAL
+  ISSUED
+}
+
+model Report {
+  id            String       @id @default(cuid())
+  engagementId  String
+  engagement    Engagement   @relation(fields: [engagementId], references: [id], onDelete: Cascade)
+  title         String
+  description   String?      @db.Text
+  status        ReportStatus @default(DRAFT)
+  attachments   Attachment[]
+  createdById   String
+  createdBy     User         @relation("ReportCreator", fields: [createdById], references: [id])
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+}
+
+// ============================================================================
+// Findings Follow-up
+// ============================================================================
+
+enum FindingStatus {
+  OPEN
+  IN_PROGRESS
+  REMEDIATED
+  CLOSED
+}
+
+enum RiskRating {
+  HIGH
+  MEDIUM
+  LOW
+}
+
+model Finding {
+  id                 String        @id @default(cuid())
+  engagementId       String
+  engagement         Engagement    @relation(fields: [engagementId], references: [id], onDelete: Cascade)
+  title              String
+  description        String?       @db.Text
+  riskRating         RiskRating    @default(MEDIUM)
+  recommendation     String?       @db.Text
+  managementResponse String?       @db.Text
+  status             FindingStatus @default(OPEN)
+  dueDate            DateTime?
+  attachments        Attachment[]
+  createdById        String
+  createdBy          User          @relation("FindingCreator", fields: [createdById], references: [id])
+  closedById         String?
+  closedBy           User?         @relation("FindingCloser", fields: [closedById], references: [id])
+  closedAt           DateTime?
+  createdAt          DateTime      @default(now())
+  updatedAt          DateTime      @updatedAt
+}
+
+// ============================================================================
+// Audit Trail (immutable)
+// ============================================================================
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  action     String
+  entityType String
+  entityId   String
+  userId     String
+  user       User     @relation("AuditLogUser", fields: [userId], references: [id])
+  details    String?  @db.Text
+  createdAt  DateTime @default(now())
+}

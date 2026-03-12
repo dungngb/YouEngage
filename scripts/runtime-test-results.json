@@ -1,0 +1,108 @@
+{
+  "pass": 19,
+  "fail": 1,
+  "total": 20,
+  "results": [
+    {
+      "id": "BOOT-01",
+      "desc": "App starts and responds",
+      "status": "PASS"
+    },
+    {
+      "id": "BOOT-02",
+      "desc": "Login page returns HTML",
+      "status": "PASS"
+    },
+    {
+      "id": "BOOT-03",
+      "desc": "Login page has SSO button",
+      "status": "PASS"
+    },
+    {
+      "id": "AUTH-01",
+      "desc": "Root (/) redirects unauthenticated",
+      "status": "PASS"
+    },
+    {
+      "id": "AUTH-02",
+      "desc": "Dashboard redirects unauthenticated",
+      "status": "PASS"
+    },
+    {
+      "id": "AUTH-03",
+      "desc": "Engagements page redirects unauthenticated",
+      "status": "PASS"
+    },
+    {
+      "id": "AUTH-04",
+      "desc": "Findings page redirects unauthenticated",
+      "status": "PASS"
+    },
+    {
+      "id": "AUTH-05",
+      "desc": "Reports page redirects unauthenticated",
+      "status": "PASS"
+    },
+    {
+      "id": "AUTH-06",
+      "desc": "Documents page redirects unauthenticated",
+      "status": "PASS"
+    },
+    {
+      "id": "NAUTH-01",
+      "desc": "Providers endpoint returns 200",
+      "status": "PASS"
+    },
+    {
+      "id": "NAUTH-02",
+      "desc": "Microsoft Entra ID provider configured",
+      "status": "PASS"
+    },
+    {
+      "id": "NAUTH-03",
+      "desc": "CSRF endpoint returns 200",
+      "status": "PASS"
+    },
+    {
+      "id": "NAUTH-04",
+      "desc": "CSRF token is present",
+      "status": "PASS"
+    },
+    {
+      "id": "NAUTH-05",
+      "desc": "Session endpoint returns 200 (empty session)",
+      "status": "PASS"
+    },
+    {
+      "id": "NAUTH-06",
+      "desc": "No active session (empty body)",
+      "status": "FAIL"
+    },
+    {
+      "id": "SEC-01",
+      "desc": "GET /api/upload rejects unauthenticated",
+      "status": "PASS"
+    },
+    {
+      "id": "SEC-02",
+      "desc": "POST /api/upload rejects unauthenticated",
+      "status": "PASS"
+    },
+    {
+      "id": "SEC-03",
+      "desc": "GET /api/files/:id rejects unauthenticated",
+      "status": "PASS"
+    },
+    {
+      "id": "STATIC-01",
+      "desc": "Non-existent path handled (redirect or 404)",
+      "status": "PASS"
+    },
+    {
+      "id": "CONFIG-01",
+      "desc": "Redirect points to login page",
+      "status": "PASS"
+    }
+  ],
+  "timestamp": "2026-03-04T18:26:08.369Z"
+}
